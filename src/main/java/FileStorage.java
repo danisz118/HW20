@@ -8,7 +8,7 @@ import java.util.*;
 public class FileStorage implements Storage {
     private String file;
     private int id;
-    private Map<Integer, User> usersStorage = new HashMap<Integer, User>();
+    private Map<Integer, User> usersStorage = new HashMap<>();
     Gson gson = new Gson();
 
     public FileStorage(String file) {
@@ -18,15 +18,15 @@ public class FileStorage implements Storage {
 
     private void usersToJson() {
         saveToFile(gson.toJson(usersStorage));
+
     }
 
-    private void saveToFile(String toJson) {
-        try {
-            FileWriter writer = new FileWriter(file);
+    private void saveToFile(String output) {
+        try (FileWriter writer = new FileWriter(file)) {
+            writer.write(output);
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     private Map<Integer, User> fromJson() {
@@ -55,29 +55,30 @@ public class FileStorage implements Storage {
         usersToJson();
     }
 
-        @Override
-        public void removeUserByName(String name) {
-            fromJson();
-            List<User> users = new ArrayList<>(usersStorage.values());
-            for (User user : users) {
-                if (user.name.equals(name)){
-                    usersStorage.remove(user.id);
-                }
+    @Override
+    public void removeUserByName(String name) {
+        fromJson();
+        List<User> users = new ArrayList<>(usersStorage.values());
+        for (User user : users) {
+            if (user.name.equals(name)) {
+                usersStorage.remove(user.id);
             }
-            usersToJson();
         }
+        usersToJson();
+    }
 
     @Override
     public void addUser(User user) {
         fromJson();
-        user.id=id++;
+        user.id = id++;
+        usersStorage.put(user.id, user);
         usersToJson();
     }
 
     @Override
     public void updateUser(User user) {
         fromJson();
-        usersStorage.put(user.id,user);
+        usersStorage.put(user.id, user);
         usersToJson();
     }
 
