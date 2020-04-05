@@ -1,22 +1,22 @@
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.lang.reflect.Type;
+import java.util.*;
 
 public class FileStorage implements Storage {
     private String file;
     private int id;
-    private Map<Integer,String> usersStorage = new HashMap<>();
+    private Map<Integer, User> usersStorage = new HashMap<Integer, User>();
     Gson gson = new Gson();
-    public FileStorage(String file){
-        this.file=file;
-        usersTOJson();
+
+    public FileStorage(String file) {
+        this.file = file;
+        usersToJson();
     }
 
-    private void usersTOJson() {
+    private void usersToJson() {
         saveToFile(gson.toJson(usersStorage));
     }
 
@@ -29,38 +29,67 @@ public class FileStorage implements Storage {
 
     }
 
+    private Map<Integer, User> fromJson() {
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            Type type = new TypeToken<Map<Integer, User>>() {
+            }.getType();
+            return gson.fromJson(br, type);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     @Override
     public void removeAll() {
-
+        fromJson();
+        usersStorage.clear();
+        usersToJson();
     }
 
     @Override
     public void removeUser(int id) {
-
+        fromJson();
+        usersStorage.remove(id);
+        usersToJson();
     }
 
-    @Override
-    public void removeUserByName(String name) {
-
-    }
+        @Override
+        public void removeUserByName(String name) {
+            fromJson();
+            List<User> users = new ArrayList<>(usersStorage.values());
+            for (User user : users) {
+                if (user.name.equals(name)){
+                    usersStorage.remove(user.id);
+                }
+            }
+            usersToJson();
+        }
 
     @Override
     public void addUser(User user) {
-
+        fromJson();
+        user.id=id++;
+        usersToJson();
     }
 
     @Override
     public void updateUser(User user) {
-
+        fromJson();
+        usersStorage.put(user.id,user);
+        usersToJson();
     }
 
     @Override
     public User getUser(int id) {
-        return null;
+        fromJson();
+        return usersStorage.get(id);
     }
 
     @Override
     public List<User> getAllUsers() {
-        return null;
+        fromJson();
+        return new LinkedList<>(usersStorage.values());
     }
 }

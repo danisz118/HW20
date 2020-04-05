@@ -3,7 +3,7 @@ public class User {
     protected String name;
     protected int age;
 
-    public User(int id, String name, int age) {
+    public User( String name, int age) {
         this.id = id;
         this.name = name;
         this.age = age;
